@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\LocationController;
@@ -20,12 +21,26 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
+
+// Ruta protegida con Sanctum
+Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-     Route::apiResource('career', CareerController::class);
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('career', CareerController::class);
     Route::apiResource('course', CourseController::class);
     Route::apiResource('location', LocationController::class);
     Route::apiResource('permission', PermissionController::class);
     Route::apiResource('permissionType', PermissionTypeController::class);
     Route::apiResource('users', UserController::class);
+});
+
+//rutas publicas 
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+
