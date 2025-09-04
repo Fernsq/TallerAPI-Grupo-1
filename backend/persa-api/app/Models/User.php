@@ -2,47 +2,73 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
-        'name',
+        'fullname',
         'email',
+        'document',
         'password',
+        'status',
+        'role_id'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    // Relación con roles
+    public function role()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Roles::class, 'role_id');
+    }
+
+    // Relación con permisos donde es instructor
+    public function instructorPermissions()
+    {
+        return $this->hasMany(Permission::class, 'instructor_id');
+    }
+
+    // Relación con permisos donde es guardia
+    public function guardPermissions()
+    {
+        return $this->hasMany(Permission::class, 'guard_id');
+    }
+
+    // Relación con permisos donde es aprendiz
+    public function permissions()
+    {
+        return $this->hasMany(Permission::class, 'apprentice_id');
+    }
+
+    // Relación con cursos del aprendiz
+    public function apprenticeCourses()
+    {
+        return $this->belongsToMany(Course::class, 'apprentice_course', 'user_id', 'course_id');
+    }
+
+    // Alias opcional más genérico
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'apprentice_course', 'user_id', 'course_id');
+    }
+
+    // Relación con cursos del instructor
+    public function instructorCourses()
+    {
+        return $this->belongsToMany(Course::class, 'instructor_course', 'instructor_id', 'course_id');
     }
 }
