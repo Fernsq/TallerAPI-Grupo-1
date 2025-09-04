@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Permission extends Model
 {
-    use HasFactory;
+       use HasFactory;
     /**
      * Se crean los atributos de la tabla
      */
@@ -40,7 +40,7 @@ class Permission extends Model
      * Relación con users: apprentice_id → users.id
      */
     public function apprentice_user(){
-        return $this->belongsTo(User::class, 'apprentice_id');
+        return $this->belongsTo(User::class, 'apprentice_id')->where('role_id', 3);
     }
 
     /**
@@ -72,5 +72,4 @@ class Permission extends Model
         return $this->belongsTo(Career::class, 'career_id');
     }
 
-   
 }

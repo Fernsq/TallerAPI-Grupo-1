@@ -8,31 +8,22 @@ use Illuminate\Http\Response;
 
 class PermissionController extends Controller
 {
-
-    private $rules = [
-        'permission_date' => 'required|date',
-        'start_time' => 'required',
-        'end_time' => 'required',
-        'departure_time' => 'required',
-        'reason' => 'required|string|max:255',
-        'instructor_id' => 'required|exists:users,id',
-        'career_id' => 'required|exists:careers,id',
-        'apprentice_id' => 'required|exists:users,id',
-        'instructor_id' => 'required|exists:users,id',
-        'status' => 'required|string|max:50',
+private $rules = [
+        'permission_date' => 'required|date|date_format:Y-m-d',
+        'start_time' => 'required|date_format:H:i',
+        'end_time' => 'required|date_format:H:i',
+        'reasons' => 'required|string|min:3|max:60',
+        'location_id' => 'required|numeric|min:1|max:99999999999999999999',
+        'permission_type_id' => 'required|numeric|min:1|max:99999999999999999999',
     ];
 
     private $traductionAttributes = [
         'permission_date' => 'fecha de permiso',
         'start_time' => 'hora de inicio',
         'end_time' => 'hora de fin',
-        'departure_time' => 'hora de salida',
-        'reason' => 'motivo',
-        'instructor_id' => 'instructor',
-        'career_id' => 'carrera',
-        'apprentice_id' => 'aprendiz',
-        'instructor_id' => 'instructor',
-        'status' => 'estado',
+        'reasons' => 'motivo',
+        'location_id' => 'sede',
+        'permission_type_id' => 'tipo de permiso',
     ];
 
     /**
@@ -41,7 +32,7 @@ class PermissionController extends Controller
     public function index()
     {
         $permissions = Permission::all();
-        $permissions->load(['user,career,location,permissionType']);
+        $permissions->load(['users','location','permission_type']);
         return response()->json($permissions, Response::HTTP_OK);
     }
 
@@ -51,17 +42,14 @@ class PermissionController extends Controller
     public function store(Request $request)
     {
         $data = $this->applyValidator($request, $this->rules, $this->traductionAttributes);
-        if (!empty($data)) {
+        if(!empty($data)){
             return $data;
         }
 
         $permission = Permission::create($request->all());
         $response = [
-            'message' => 'Registro creado exitosamente',
-            'user' => $permission,
-            'career' => $permission,
-            'location' => $permission,
-            'permissionType' => $permission
+            'message' => 'Permiso creado exitosamente',
+            'permission' => $permission
         ];
 
         return response()->json($response, Response::HTTP_CREATED);
@@ -72,7 +60,7 @@ class PermissionController extends Controller
      */
     public function show(Permission $permission)
     {
-        $permission->load(['user,career,location,permissionType']);
+        $permission->load(['users','location','permission_type']);
         return response()->json($permission, Response::HTTP_OK);
     }
 
@@ -82,17 +70,14 @@ class PermissionController extends Controller
     public function update(Request $request, Permission $permission)
     {
         $data = $this->applyValidator($request, $this->rules, $this->traductionAttributes);
-        if (!empty($data)) {
+        if(!empty($data)){
             return $data;
         }
 
         $permission->update($request->all());
-       $response = [
-            'message' => 'Registro actualizado exitosamente',
-            'user' => $permission,
-            'career' => $permission,
-            'location' => $permission,
-            'permissionType' => $permission
+        $response = [
+            'message' => 'Permiso actualizado exitosamente',
+            'permission' => $permission
         ];
 
         return response()->json($response, Response::HTTP_OK);
@@ -103,16 +88,10 @@ class PermissionController extends Controller
      */
     public function destroy(Permission $permission)
     {
-        $permission -> delete();
-
+        $permission->delete();
         $response = [
-            'message' => 'Registro eliminado exitosamente',
-            'user' => $permission,
-            'career' => $permission,
-            'location' => $permission,
-            'permissionType' => $permission
+            'message' => 'Permiso eliminada exitosamente',
+            'permission' => $permission
         ];
-
-        return response()->json($response, Response::HTTP_OK);
     }
 }
